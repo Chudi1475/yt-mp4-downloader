@@ -533,8 +533,8 @@ async function init(){
   folder = env.default_dir || "";
   $("folderPath").textContent = folder;
   buildChips(env.qualities || Object.keys(QLABEL));
-  if(env.aria2c){ $("turbo").checked = true; $("turboHint").textContent = "ready"; }
-  else { $("turbo").checked = false; $("turbo").disabled = true; $("turboRow").classList.add("disabled"); $("turboHint").textContent = "not installed"; }
+  if(env.aria2c){ $("turbo").checked = false; $("turboHint").textContent = "max speed · hides live %"; }
+  else { $("turbo").checked = false; $("turbo").disabled = true; $("turboRow").classList.add("disabled"); $("turboHint").textContent = "needs aria2c"; }
   log("ffmpeg: " + (env.ffmpeg ? "ready" : "missing"));
   log("aria2c: " + (env.aria2c ? "ready (turbo on)" : "not installed (optional)"));
   setConn(16);
