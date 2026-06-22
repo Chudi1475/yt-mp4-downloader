@@ -18,6 +18,18 @@ def resource_path(rel):
     return os.path.join(base, rel)
 
 
+# Where downloads land by default.
+DEFAULT_DIR = r"C:\Users\Chudi\Desktop\Desktop#2\YoutubeDownloads"
+
+
+def ensure_default_dir():
+    try:
+        os.makedirs(DEFAULT_DIR, exist_ok=True)
+        return DEFAULT_DIR
+    except Exception:
+        return os.path.join(os.path.expanduser("~"), "Downloads")
+
+
 class Api:
     def __init__(self):
         self._window = None
@@ -46,7 +58,7 @@ class Api:
             "ffmpeg": bool(find_ffmpeg()),
             "aria2c": has_aria2c(),
             "qualities": list(QUALITY_FORMATS.keys()),
-            "default_dir": os.path.join(os.path.expanduser("~"), "Downloads"),
+            "default_dir": ensure_default_dir(),
         }
 
     def get_clipboard(self):
@@ -84,8 +96,7 @@ class Api:
                 return True
         except Exception:
             pass
-        fallback = os.path.dirname(path) if path else os.path.join(
-            os.path.expanduser("~"), "Downloads")
+        fallback = os.path.dirname(path) if path else DEFAULT_DIR
         return self.open_folder(fallback)
 
     def reveal(self, path):
@@ -161,8 +172,7 @@ class Api:
         if not url:
             self._js("onError", "Enter a YouTube URL first.")
             return
-        out_dir = (opts.get("folder")
-                   or os.path.join(os.path.expanduser("~"), "Downloads")).strip()
+        out_dir = (opts.get("folder") or ensure_default_dir()).strip()
         quality = opts.get("quality") or "Best available"
         use_aria = bool(opts.get("turbo"))
         conc = int(opts.get("connections") or 16)
@@ -285,6 +295,7 @@ def main():
                     "+(document.getElementById('trim')?'trim':'notrim')+'|'"
                     "+(document.getElementById('openFileBtn')?'open':'noopen')+'|'"
                     "+getComputedStyle(document.getElementById('downloadBtn')).opacity+'|'"
+                    "+document.getElementById('folderPath').textContent+'|'"
                     "+(window.__lastErr||'noerr')")
                 with open(out, "w", encoding="utf-8") as f:
                     f.write(str(res))
