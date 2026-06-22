@@ -168,12 +168,205 @@ input,.log{-webkit-user-select:text;user-select:text;}
 .log::-webkit-scrollbar{width:6px;}
 .log::-webkit-scrollbar-thumb{background:var(--glass-strong);border-radius:3px;}
 
+/* trim */
+.trim-tile{display:flex;flex-direction:column;gap:0;}
+.trim-fields{display:flex;align-items:flex-end;gap:14px;padding:14px 2px 4px;animation:rise .3s ease;}
+.time-field{display:flex;flex-direction:column;gap:6px;flex:1;}
+.time-field label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding-left:2px;}
+.time-field input{background:var(--glass-strong);border:1px solid var(--border);border-radius:11px;color:var(--text);
+  font-size:15px;font-variant-numeric:tabular-nums;padding:12px 14px;outline:none;transition:box-shadow .2s;text-align:center;letter-spacing:1px;}
+.time-field input:focus{box-shadow:0 0 0 2px rgba(255,45,143,.5),var(--glow);}
+.time-arrow{width:20px;height:20px;color:var(--muted);margin-bottom:13px;flex:0 0 auto;}
+
+/* completed actions */
+.done-actions{display:flex;gap:11px;align-items:stretch;animation:rise .3s ease;}
+.done-cta{height:52px;font-size:15px;flex:1;background:linear-gradient(135deg,#19c37d,#0fb8c0);box-shadow:0 10px 30px rgba(25,195,125,.32);}
+.done-cta:hover{box-shadow:0 16px 44px rgba(25,195,125,.5);}
+.done-actions .ghost-btn{padding:0 18px;}
+.bar.clickable{cursor:pointer;}
+
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:50;}
 
 @keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 .shake{animation:shake .4s;}
 @keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-7px);}40%,80%{transform:translateX(7px);}}
+/* ============================================================
+   APPLE REFINEMENT LAYER — synthesized from 5 design principals
+   (motion · buttons · materials · typography · choreography).
+   Appended last so it intentionally overrides the base styles.
+   ============================================================ */
+:root{
+  /* motion: Apple's real easing curves + duration split */
+  --ease-standard:cubic-bezier(0.25,0.1,0.25,1);
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+  --ease-out-expo:cubic-bezier(0.16,1,0.3,1);
+  --ease-in:cubic-bezier(0.4,0,1,1);
+  --ease-in-out:cubic-bezier(0.45,0,0.55,1);
+  --ease-out:cubic-bezier(0.22,0.61,0.36,1);
+  --dur-instant:120ms; --dur-control:200ms; --dur-content:360ms; --dur-entrance:480ms;
+  --focus-ring:0 0 0 4px rgba(255,45,143,.45), 0 0 0 1.5px rgba(255,255,255,.85);
+  /* materials: light-from-above shadow scale + specular edge + vibrancy wash */
+  --shadow-sm:0 1px 2px rgba(0,0,0,.30),0 4px 12px rgba(0,0,0,.22);
+  --shadow-md:0 2px 5px rgba(0,0,0,.34),0 12px 30px rgba(0,0,0,.30);
+  --shadow-lg:0 4px 10px rgba(0,0,0,.40),0 28px 60px rgba(0,0,0,.40);
+  --specular:inset 0 1px 0 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.04),inset 0 -1px 0 0 rgba(0,0,0,.20);
+  --vibrancy-wash:linear-gradient(180deg,rgba(255,255,255,.07) 0%,rgba(255,255,255,.012) 18%,transparent 46%);
+  /* typography: 8pt spacing scale + SF-style optical tracking ladder */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+  --track-hero:-0.03em; --track-title:-0.022em; --track-body:-0.01em; --track-eyebrow:0.12em;
+}
+
+/* SF-like rendering */
+body{ -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility; font-feature-settings:"kern" 1,"liga" 1,"calt" 1; letter-spacing:var(--track-body); }
+
+/* macOS sheet vibrancy material — lit-from-above glass */
+.glass{ background:var(--vibrancy-wash),var(--glass);
+  backdrop-filter:blur(30px) saturate(180%) brightness(1.08);
+  -webkit-backdrop-filter:blur(30px) saturate(180%) brightness(1.08);
+  box-shadow:var(--specular),var(--shadow-md); }
+
+/* visionOS ambient room-light aurora (drifts, not lava-lamp) */
+.aurora{ filter:blur(120px) saturate(115%); opacity:.32; }
+.aurora i{ width:60vw; height:60vw; animation:float 34s ease-in-out infinite; will-change:transform; }
+.aurora i:nth-child(1){ background:radial-gradient(circle,rgba(255,61,84,.85),transparent 55%); }
+.aurora i:nth-child(2){ background:radial-gradient(circle,rgba(181,55,242,.8),transparent 55%); }
+.aurora i:nth-child(3){ background:radial-gradient(circle,rgba(45,123,255,.7),transparent 58%); }
+@keyframes float{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(4%,5%) scale(1.06);}66%{transform:translate(-3%,-3%) scale(.97);}}
+
+/* dark-page dither grain — kills banding */
+body::after{ content:""; position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.025; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:160px 160px; }
+
+/* typography: SF optical scale */
+.brand-name{ font-weight:700; font-size:15px; line-height:1.1; letter-spacing:var(--track-title); }
+.brand-sub{ font-weight:600; font-size:9.5px; line-height:1.2; letter-spacing:var(--track-eyebrow); margin-top:3px; }
+.block-label{ font-weight:600; font-size:11px; letter-spacing:var(--track-eyebrow); margin:var(--space-1) var(--space-1) var(--space-3); }
+.chip{ font-weight:600; font-size:14px; line-height:1; letter-spacing:var(--track-body); }
+.vtitle{ font-weight:650; font-size:15px; line-height:1.3; letter-spacing:var(--track-title); }
+.meta{ font-weight:450; font-size:12px; letter-spacing:var(--track-body); margin-top:var(--space-1); }
+.badge{ font-weight:600; font-size:11px; letter-spacing:0.01em; font-variant-numeric:tabular-nums; }
+.tile-top{ font-weight:600; font-size:13px; letter-spacing:var(--track-body); }
+.tile-top .val{ font-weight:700; font-size:16px; letter-spacing:var(--track-title); font-variant-numeric:tabular-nums; }
+.name{ font-weight:600; font-size:14px; line-height:1.15; letter-spacing:var(--track-body); }
+.hint{ font-weight:400; font-size:11px; line-height:1.3; letter-spacing:0; }
+.pct{ font-weight:800; font-size:34px; line-height:1; letter-spacing:var(--track-hero); font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
+#progStatus{ font-weight:600; font-size:14px; line-height:1.25; letter-spacing:var(--track-body); }
+.stat-val{ font-weight:650; font-size:16px; letter-spacing:var(--track-title); font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; }
+.stat-lbl{ font-weight:600; font-size:9.5px; letter-spacing:var(--track-eyebrow); margin-top:var(--space-1); }
+.time-field label{ font-weight:600; font-size:10px; letter-spacing:var(--track-eyebrow); }
+.time-field input{ font-weight:600; font-size:15px; letter-spacing:0.02em; font-variant-numeric:tabular-nums; }
+.cta{ font-weight:700; font-size:16px; letter-spacing:var(--track-title); }
+#url{ font-weight:450; font-size:15px; letter-spacing:var(--track-body); }
+.ghost-btn{ font-weight:600; font-size:13px; letter-spacing:var(--track-body); }
+.log-wrap summary{ font-weight:600; font-size:11px; letter-spacing:var(--track-eyebrow); }
+.log{ font-size:12px; line-height:1.5; letter-spacing:0; }
+
+/* typography: tightened 8pt spacing rhythm */
+.content{ padding:var(--space-1) var(--space-5) var(--space-5); gap:var(--space-4); }
+.tile{ padding:var(--space-4); }
+.url-card{ padding:var(--space-2); }
+.input-wrap{ gap:var(--space-3); padding:var(--space-1) var(--space-2) var(--space-1) var(--space-4); }
+.preview{ gap:var(--space-4); padding:var(--space-3); }
+.bento{ gap:var(--space-3); }
+.chips{ gap:var(--space-2); }
+.stats{ gap:var(--space-3); }
+.progress-card{ padding:var(--space-4); gap:var(--space-4); }
+
+/* motion: per-control deceleration (non-button elements) */
+.win-btn{ transition:background var(--dur-control) var(--ease-standard),color var(--dur-control) var(--ease-standard); }
+.input-wrap{ transition:box-shadow var(--dur-content) var(--ease-out-expo); }
+.fill{ transition:width var(--dur-content) var(--ease-out-expo); animation:gshift 3s linear infinite; }
+.progress-card{ transition:box-shadow var(--dur-entrance) var(--ease-out-expo); animation:none; }
+.done-actions{ animation:none; }
+.time-field input{ transition:box-shadow var(--dur-content) var(--ease-out-expo); }
+.thumb{ transition:opacity var(--dur-content) var(--ease-standard),transform var(--dur-content) var(--ease-spring); }
+.slider::-webkit-slider-thumb{ transition:transform var(--dur-control) var(--ease-spring),box-shadow var(--dur-control) var(--ease-standard); }
+.slider:hover::-webkit-slider-thumb{ transform:scale(1.12); }
+.slider:active::-webkit-slider-thumb{ transform:scale(1.18); transition:transform var(--dur-instant) var(--ease-standard); }
+@keyframes rise{ from{opacity:0;transform:translateY(12px) scale(.985);} to{opacity:1;transform:translateY(0) scale(1);} }
+@keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.45;} }
+.preview.loading .thumb{ animation:pulse 1.4s var(--ease-in-out) infinite; }
+
+/* buttons: Apple segmented-control chips (spring press + weighted shadow) */
+.chip{ --chip-press:1; --chip-lift:0px; transform:translateY(var(--chip-lift)) scale(var(--chip-press));
+  transition:background var(--dur-control) var(--ease-standard),border-color var(--dur-control) var(--ease-standard),box-shadow var(--dur-content) var(--ease-out-expo),color var(--dur-control) var(--ease-standard),transform .5s var(--ease-spring);
+  box-shadow:0 1px 2px rgba(0,0,0,.25); }
+.chip:hover{ --chip-lift:-2px; border-color:rgba(255,255,255,.30); box-shadow:0 8px 22px rgba(0,0,0,.34); }
+.chip:active{ --chip-press:.94; --chip-lift:0px; transition:transform var(--dur-instant) var(--ease-out); }
+.chip.active{ box-shadow:0 8px 26px rgba(255,45,143,.42),var(--glow); }
+.chip.active:hover{ --chip-lift:-2px; box-shadow:0 12px 32px rgba(255,45,143,.55),var(--glow); }
+
+/* buttons: Apple secondary (spring lift + crisp press) */
+.ghost-btn{ --g-lift:0px; --g-press:1; transform:translateY(var(--g-lift)) scale(var(--g-press));
+  transition:background var(--dur-control) var(--ease-standard),border-color var(--dur-control) var(--ease-standard),box-shadow .25s var(--ease-out),color var(--dur-control) var(--ease-standard),transform .45s var(--ease-spring); }
+.ghost-btn:hover{ --g-lift:-1.5px; box-shadow:0 7px 18px rgba(0,0,0,.3); }
+.ghost-btn:active{ --g-press:.95; --g-lift:0px; transition:transform var(--dur-instant) var(--ease-out); }
+
+/* buttons: iOS switch knob spring + squash-and-stretch */
+.track:before{ transition:transform .42s var(--ease-spring),width .2s var(--ease-out),background .25s; box-shadow:0 2px 5px rgba(0,0,0,.35); }
+.switch:active .track:before{ width:25px; }
+.switch input:checked + .track:before{ transform:translateX(21px); }
+.switch:active input:checked + .track:before{ transform:translateX(17px); width:25px; }
+
+/* buttons + materials merged: Apple pill — transform composes (lift+press+magnetic), material depth shadow survives hover */
+.cta{ --cta-lift:0px; --cta-press:1; --mx:0px; --my:0px;
+  transform:translate3d(var(--mx),calc(var(--my) + var(--cta-lift)),0) scale(var(--cta-press));
+  transition:transform .5s var(--ease-spring),box-shadow .35s var(--ease-out),filter .2s; will-change:transform;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 6px rgba(0,0,0,.22),0 2px 6px rgba(0,0,0,.30),0 10px 30px rgba(255,45,143,.32); }
+.cta:hover{ --cta-lift:-2px; box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -2px 6px rgba(0,0,0,.22),0 4px 10px rgba(0,0,0,.34),0 16px 46px rgba(255,45,143,.5); }
+.cta:active{ --cta-press:.965; --cta-lift:0px; transition:transform var(--dur-instant) var(--ease-out),box-shadow var(--dur-instant) var(--ease-out); }
+.cta:disabled{ --cta-lift:0px; --cta-press:1; --mx:0px; --my:0px; transform:none; }
+.cta::after{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:0;
+  background:radial-gradient(180px circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.30),transparent 60%); opacity:0; transition:opacity .3s var(--ease-out); mix-blend-mode:screen; }
+.cta:hover::after{ opacity:1; }
+.cta > *{ position:relative; z-index:1; }
+.done-cta{ box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 6px rgba(0,0,0,.20),0 2px 6px rgba(0,0,0,.30),0 10px 30px rgba(25,195,125,.32); }
+.done-cta:hover{ box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -2px 6px rgba(0,0,0,.20),0 4px 10px rgba(0,0,0,.34),0 16px 48px rgba(25,195,125,.52); }
+
+/* buttons: Apple accessible focus ring (keyboard only) */
+.cta:focus-visible,.done-cta:focus-visible,.chip:focus-visible,.ghost-btn:focus-visible,.win-btn:focus-visible,#pasteBtn:focus-visible{ outline:none; box-shadow:var(--focus-ring); }
+.cta:focus-visible{ box-shadow:0 16px 46px rgba(255,45,143,.5),var(--focus-ring); }
+.done-cta:focus-visible{ box-shadow:0 16px 44px rgba(25,195,125,.5),var(--focus-ring); }
+.switch input:focus-visible + .track{ outline:none; box-shadow:var(--focus-ring); }
+.slider:focus-visible{ box-shadow:var(--focus-ring); }
+.slider:focus-visible::-webkit-slider-thumb{ box-shadow:0 0 0 6px rgba(255,45,143,.35); }
+#url:focus-visible,#trimStart:focus-visible,#trimEnd:focus-visible{ outline:none; }
+
+/* choreography: apple.com staggered fade-up entrance */
+@keyframes contentRise{ from{opacity:0;transform:translateY(22px);} to{opacity:1;transform:translateY(0);} }
+.content.choreo-ready > *{ opacity:0; }
+.content.choreo-go > *{ animation:contentRise .62s var(--ease-out-expo) both; animation-delay:calc(var(--stagger,0) * 70ms); }
+
+/* choreography: idle->downloading sheet present (lift & settle) */
+@keyframes cardSettle{ 0%{transform:translateY(14px) scale(.985);box-shadow:0 4px 14px rgba(0,0,0,.25);} 60%{transform:translateY(-3px) scale(1.004);} 100%{transform:translateY(0) scale(1);} }
+.progress-card.choreo-enter{ animation:cardSettle .58s var(--ease-out-expo) both; }
+
+/* choreography: live-number micro-pop on each committed % (text untouched) */
+@keyframes pctTick{ 0%{transform:scale(1);} 38%{transform:scale(1.11);} 100%{transform:scale(1);} }
+.pct{ display:inline-block; transform-origin:right center; will-change:transform; }
+.pct.choreo-tick{ animation:pctTick .42s var(--ease-spring); }
+
+/* choreography: confident control swap to done-actions */
+@keyframes actionsFade{ from{opacity:0;transform:translateY(8px) scale(.99);} to{opacity:1;transform:translateY(0) scale(1);} }
+.done-actions.choreo-swap{ animation:actionsFade .5s var(--ease-out-expo) both; }
+
+/* choreography: completion "breath" — scale-settle + glow bloom */
+@keyframes okBloom{ 0%{transform:scale(1);box-shadow:0 0 0 1px rgba(54,224,192,.4),0 0 44px rgba(54,224,192,.22);} 28%{transform:scale(1.012);box-shadow:0 0 0 1px rgba(54,224,192,.75),0 0 70px rgba(54,224,192,.5),0 0 120px rgba(54,224,192,.2);} 100%{transform:scale(1);box-shadow:0 0 0 1px rgba(54,224,192,.4),0 0 44px rgba(54,224,192,.22);} }
+.progress-card.ok.choreo-bloom{ animation:okBloom 1.1s cubic-bezier(0.22,1,0.36,1); }
+.progress-card.ok .fill{ box-shadow:0 0 18px rgba(54,224,192,.55); transition:box-shadow .5s ease; }
+
+/* Apple ships reduced-motion every release */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  .aurora i,.cta:before,.cta::after,.fill:after,.bar.indet .fill,.preview.loading .thumb{ animation:none !important; }
+  .content.choreo-ready > *,.content.choreo-go > *{ opacity:1 !important; animation:none !important; }
+  .progress-card.choreo-enter,.done-actions.choreo-swap,.progress-card.ok.choreo-bloom,.pct.choreo-tick{ animation:none !important; }
+  @keyframes rise{ from{opacity:0;} to{opacity:1;} }
+  .cta{ --mx:0px; --my:0px; }
+}
 </style>
 </head>
 <body>
@@ -265,6 +458,25 @@ input,.log{-webkit-user-select:text;user-select:text;}
       </div>
     </section>
 
+    <!-- clip / trim -->
+    <section class="glass tile trim-tile">
+      <div class="toggle-row">
+        <div class="tl">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>
+          <div>
+            <div class="name">Clip a section</div>
+            <div class="hint">grab only part of the video, not the whole thing</div>
+          </div>
+        </div>
+        <label class="switch"><input type="checkbox" id="trim"><span class="track"></span></label>
+      </div>
+      <div class="trim-fields" id="trimFields" hidden>
+        <div class="time-field"><label>Start</label><input id="trimStart" placeholder="0:00" spellcheck="false"></div>
+        <svg class="time-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6l6 6-6 6"/></svg>
+        <div class="time-field"><label>End</label><input id="trimEnd" placeholder="end" spellcheck="false"></div>
+      </div>
+    </section>
+
     <!-- CTA -->
     <button id="downloadBtn" class="cta">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
@@ -284,6 +496,13 @@ input,.log{-webkit-user-select:text;user-select:text;}
         <div class="stat"><span class="stat-val" id="statSize">&mdash;</span><span class="stat-lbl">size</span></div>
       </div>
       <button id="cancelBtn" class="ghost-btn danger">Cancel</button>
+      <div class="done-actions" id="doneActions" hidden>
+        <button class="cta done-cta" id="openFileBtn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <span>Open file</span>
+        </button>
+        <button class="ghost-btn" id="revealBtn">Show in folder</button>
+      </div>
     </section>
 
     <!-- log -->
@@ -298,7 +517,8 @@ input,.log{-webkit-user-select:text;user-select:text;}
 const QLABEL = {"Best available":"Best","4K (2160p)":"4K","1440p (2K)":"2K","1080p (Full HD)":"1080p","720p (HD)":"720p","Audio only (MP3)":"MP3"};
 const api = () => window.pywebview.api;
 const $ = id => document.getElementById(id);
-let env = {}, selectedQuality = "4K (2160p)", folder = "", infoTimer = null, lastInfoUrl = "", isIndet = false;
+window.addEventListener("error", e=>{ window.__lastErr = (e.message||"err")+" @"+(e.lineno||0); });
+let env = {}, selectedQuality = "4K (2160p)", folder = "", infoTimer = null, lastInfoUrl = "", isIndet = false, lastPath = "";
 
 function fmtBytes(n){ if(!n) return "0 B"; const u=["B","KB","MB","GB","TB"]; let i=0; n=Number(n); while(Math.abs(n)>=1024&&i<u.length-1){n/=1024;i++;} return n.toFixed(1)+" "+u[i]; }
 function fmtTime(s){ if(s==null) return "--:--"; s=Math.floor(s); const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60; const p=v=>String(v).padStart(2,"0"); return h?`${h}:${p(m)}:${p(x)}`:`${p(m)}:${p(x)}`; }
@@ -347,6 +567,10 @@ function bind(){
   $("cancelBtn").onclick = ()=>{ api().cancel(); $("progStatus").textContent="Cancelling..."; };
   $("minBtn").onclick = ()=> api().minimize();
   $("closeBtn").onclick = ()=> api().close();
+  $("trim").addEventListener("change", e=>{ $("trimFields").hidden = !e.target.checked; });
+  $("openFileBtn").onclick = ()=> api().open_result(lastPath);
+  $("revealBtn").onclick = ()=> api().reveal(lastPath);
+  $("bar").addEventListener("click", ()=>{ if($("bar").classList.contains("clickable")) api().open_result(lastPath); });
   document.querySelectorAll(".win-btn").forEach(b=> b.addEventListener("mousedown", e=> e.stopPropagation()));
 }
 
@@ -375,17 +599,25 @@ function renderPreview(info){
 function startDownload(){
   const url = $("url").value.trim();
   if(!url){ shake($("url").parentElement); log("Enter a YouTube URL first."); return; }
-  const opts = { url, folder, quality:selectedQuality, turbo:$("turbo").checked, connections:Number($("conn").value), playlist:$("playlist").checked };
+  const trimOn = $("trim").checked;
+  const opts = { url, folder, quality:selectedQuality, turbo:$("turbo").checked,
+    connections:Number($("conn").value), playlist:$("playlist").checked,
+    trim:trimOn, trim_start:$("trimStart").value, trim_end:$("trimEnd").value };
+  const indet = opts.turbo && !trimOn;   // trim forces the native (measurable) downloader
   setBusy(true);
   $("progressCard").hidden = false;
   $("progressCard").classList.remove("ok");
+  $("doneActions").hidden = true;
+  $("cancelBtn").hidden = false;
+  $("bar").classList.remove("clickable");
   $("progStatus").textContent = "Starting...";
-  $("progPct").textContent = opts.turbo ? "turbo" : "0%";
-  setIndet(opts.turbo);
-  $("fill").style.width = opts.turbo ? "" : "0%";
+  $("progPct").textContent = indet ? "turbo" : "0%";
+  setIndet(indet);
+  $("fill").style.width = indet ? "" : "0%";
   $("statSpeed").textContent="—"; $("statEta").textContent="—"; $("statSize").textContent="—";
   log("\n=== " + url);
-  log("quality: " + selectedQuality + (opts.turbo ? " · turbo" : " · " + opts.connections + " connections"));
+  log("quality: " + selectedQuality + (indet ? " · turbo" : " · " + opts.connections + " connections")
+      + (trimOn ? " · clip " + (opts.trim_start||"0:00") + "→" + (opts.trim_end||"end") : ""));
   api().start_download(opts);
 }
 
@@ -397,17 +629,30 @@ window.onProgress = (d)=>{
   if(d.status === "downloading"){
     if(isIndet){ $("statSpeed").textContent = d.speed ? fmtBytes(d.speed)+"/s" : "—"; return; }
     const total=d.total, done=d.downloaded||0;
-    if(total){ const pct=done/total*100; $("fill").style.width=pct.toFixed(1)+"%"; $("progPct").textContent=Math.round(pct)+"%"; }
+    let pct = (d.percent!=null) ? d.percent : (total ? done/total*100 : null);
+    if(pct!=null){ $("fill").style.width=pct.toFixed(1)+"%"; $("progPct").textContent=Math.round(pct)+"%"; }
     $("statSpeed").textContent = d.speed ? fmtBytes(d.speed)+"/s" : "—";
     $("statEta").textContent = fmtTime(d.eta);
     $("statSize").textContent = fmtBytes(done) + (total ? " / "+fmtBytes(total) : "");
   } else if(d.status === "finished"){
+    if(d.percent!=null){ $("fill").style.width=d.percent+"%"; $("progPct").textContent=Math.round(d.percent)+"%"; }
     $("progStatus").textContent = "Merging into MP4...";
   }
 };
-window.onDone = ()=>{ setBusy(false); setIndet(false); $("fill").style.width="100%"; $("progPct").textContent="100%"; $("progStatus").textContent="Done! Saved to your folder."; $("progressCard").classList.add("ok"); log("Complete."); celebrate(); };
-window.onCancelled = ()=>{ setBusy(false); setIndet(false); $("progStatus").textContent="Cancelled."; log("Cancelled."); };
-window.onError = (m)=>{ setBusy(false); setIndet(false); $("progStatus").textContent="Error — see activity log."; log("ERROR: " + m); };
+window.onDone = (path)=>{
+  lastPath = path || "";
+  setBusy(false); setIndet(false);
+  $("fill").style.width="100%"; $("progPct").textContent="100%";
+  $("progStatus").textContent = "Done — open it";
+  $("progressCard").classList.add("ok");
+  $("cancelBtn").hidden = true;
+  $("doneActions").hidden = false;
+  $("bar").classList.add("clickable");
+  log("Complete." + (lastPath ? "  →  " + lastPath : ""));
+  celebrate();
+};
+window.onCancelled = ()=>{ setBusy(false); setIndet(false); $("cancelBtn").hidden=true; $("progStatus").textContent="Cancelled."; log("Cancelled."); };
+window.onError = (m)=>{ setBusy(false); setIndet(false); $("cancelBtn").hidden=true; $("progStatus").textContent="Error — see activity log."; log("ERROR: " + m); };
 window.onLog = (m)=> log(m);
 
 function celebrate(){
@@ -417,6 +662,103 @@ function celebrate(){
   for(let i=0;i<140;i++) parts.push({x:innerWidth/2,y:innerHeight*.42,vx:(Math.random()-.5)*13,vy:(Math.random()-.95)*13,c:colors[i%colors.length],r:Math.random()*4+2,life:1});
   let t=0;(function anim(){ t++; ctx.clearRect(0,0,c.width,c.height); parts.forEach(p=>{ p.vy+=.27; p.x+=p.vx; p.y+=p.vy; p.life-=.011; ctx.globalAlpha=Math.max(p.life,0); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); }); if(t<150) requestAnimationFrame(anim); else c.remove(); })();
 }
+/* ===== Apple magnetic cursor-tracking hover + pointer highlight (apple.com hero buttons) =====
+   Additive IIFE: only addEventListener + CSS vars (--mx/--my/--gx/--gy); touches no existing fn/ID/api(). */
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)");
+  var raf = window.requestAnimationFrame || function(f){ return setTimeout(f,16); };
+  function magnetize(el){
+    if(!el) return;
+    var tx=0, ty=0, cx=0, cy=0, ticking=false;
+    var PULL=0.22, MAX=10, LERP=0.2;
+    function frame(){
+      cx += (tx-cx)*LERP; cy += (ty-cy)*LERP;
+      if(Math.abs(tx-cx)<0.1 && Math.abs(ty-cy)<0.1){ cx=tx; cy=ty; ticking=false; }
+      el.style.setProperty("--mx", cx.toFixed(2)+"px");
+      el.style.setProperty("--my", cy.toFixed(2)+"px");
+      if(ticking) raf(frame);
+    }
+    function kick(){ if(!ticking){ ticking=true; raf(frame); } }
+    el.addEventListener("pointermove", function(e){
+      if(reduce && reduce.matches) return;
+      if(el.disabled || el.offsetParent===null) return;
+      var r = el.getBoundingClientRect();
+      if(!r.width) return;
+      var px = (e.clientX-r.left)/r.width  - 0.5;
+      var py = (e.clientY-r.top )/r.height - 0.5;
+      tx = Math.max(-MAX,Math.min(MAX, px*r.width *PULL));
+      ty = Math.max(-MAX,Math.min(MAX, py*r.height*PULL));
+      el.style.setProperty("--gx", ((px+0.5)*100).toFixed(1)+"%");
+      el.style.setProperty("--gy", ((py+0.5)*100).toFixed(1)+"%");
+      kick();
+    }, {passive:true});
+    el.addEventListener("pointerleave", function(){ tx=0; ty=0; el.style.setProperty("--gx","50%"); el.style.setProperty("--gy","50%"); kick(); }, {passive:true});
+    el.addEventListener("pointercancel", function(){ tx=0; ty=0; kick(); }, {passive:true});
+  }
+  document.querySelectorAll(".cta").forEach(magnetize);
+})();
+
+/* ===== Apple choreography — staggered entrance + state settles + completion bloom =====
+   Additive IIFE: observes/listens only; never touches init(), api(), or download logic. */
+(function(){
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function playEntrance(){
+    var c = document.querySelector(".content");
+    if(!c || c.dataset.choreoEntered) return;
+    c.dataset.choreoEntered = "1";
+    var kids = c.children, i = 0, n = 0;
+    for(i=0;i<kids.length;i++){
+      if(kids[i].hasAttribute("hidden")) continue;
+      kids[i].style.setProperty("--stagger", n++);
+    }
+    if(reduce) return;
+    c.classList.add("choreo-ready");
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      c.classList.remove("choreo-ready"); c.classList.add("choreo-go");
+      setTimeout(function(){ c.classList.remove("choreo-go"); }, 1700);  // stop the rule replaying on later-revealed panels
+    }); });
+  }
+  window.addEventListener("pywebviewready", function(){ setTimeout(playEntrance, 0); });
+  if(document.readyState !== "loading") setTimeout(playEntrance, 60);
+  else document.addEventListener("DOMContentLoaded", function(){ setTimeout(playEntrance, 60); });
+
+  var card = document.getElementById("progressCard");
+  if(card && !reduce){
+    var wasHidden = card.hasAttribute("hidden");
+    new MutationObserver(function(){
+      var hidden = card.hasAttribute("hidden");
+      if(wasHidden && !hidden){ card.classList.remove("choreo-enter"); void card.offsetWidth; card.classList.add("choreo-enter"); }
+      wasHidden = hidden;
+    }).observe(card, {attributes:true, attributeFilter:["hidden"]});
+    card.addEventListener("animationend", function(e){ if(e.animationName==="cardSettle") card.classList.remove("choreo-enter"); });
+  }
+
+  var pct = document.getElementById("progPct");
+  if(pct && !reduce){
+    var last = pct.textContent;
+    new MutationObserver(function(){
+      if(pct.textContent === last) return;
+      last = pct.textContent;
+      pct.classList.remove("choreo-tick"); void pct.offsetWidth; pct.classList.add("choreo-tick");
+    }).observe(pct, {childList:true, characterData:true, subtree:true});
+    pct.addEventListener("animationend", function(e){ if(e.animationName==="pctTick") pct.classList.remove("choreo-tick"); });
+  }
+
+  if(card){
+    var wasOk = card.classList.contains("ok");
+    new MutationObserver(function(){
+      var ok = card.classList.contains("ok");
+      if(ok && !wasOk && !reduce){
+        card.classList.remove("choreo-bloom"); void card.offsetWidth; card.classList.add("choreo-bloom");
+        var da = document.getElementById("doneActions");
+        if(da){ da.classList.remove("choreo-swap"); void da.offsetWidth; da.classList.add("choreo-swap"); }
+      }
+      wasOk = ok;
+    }).observe(card, {attributes:true, attributeFilter:["class"]});
+    card.addEventListener("animationend", function(e){ if(e.animationName==="okBloom") card.classList.remove("choreo-bloom"); });
+  }
+})();
 </script>
 </body>
 </html>

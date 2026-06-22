@@ -23,6 +23,11 @@ class Api:
         self._window = None
         self._dl = None
         self.downloading = False
+        # accurate-progress state (spans both video + audio streams)
+        self._grand_total = None
+        self._completed = 0
+        self._counted = set()
+        self._trim = False
 
     def set_window(self, w):
         self._window = w
@@ -70,6 +75,46 @@ class Api:
         except Exception:
             pass
         return False
+
+    def open_result(self, path):
+        """Open the finished file in the default player."""
+        try:
+            if path and os.path.isfile(path):
+                os.startfile(path)
+                return True
+        except Exception:
+            pass
+        fallback = os.path.dirname(path) if path else os.path.join(
+            os.path.expanduser("~"), "Downloads")
+        return self.open_folder(fallback)
+
+    def reveal(self, path):
+        """Open the containing folder with the file highlighted."""
+        try:
+            if path and os.path.exists(path):
+                import subprocess
+                subprocess.Popen(["explorer", "/select,",
+                                  os.path.normpath(path)])
+                return True
+        except Exception:
+            pass
+        return self.open_folder(os.path.dirname(path) if path else "")
+
+    @staticmethod
+    def _parse_time(s):
+        """'1:23' / '1:02:03' / '83' / '83.5' -> seconds (float), or None."""
+        s = (s or "").strip()
+        if not s:
+            return None
+        try:
+            if ":" in s:
+                sec = 0.0
+                for part in s.split(":"):
+                    sec = sec * 60 + float(part or 0)
+                return sec
+            return float(s)
+        except Exception:
+            return None
 
     def minimize(self):
         if self._window:
@@ -123,23 +168,81 @@ class Api:
         conc = int(opts.get("connections") or 16)
         playlist = bool(opts.get("playlist"))
 
+        start_sec = end_sec = None
+        if opts.get("trim"):
+            start_sec = self._parse_time(opts.get("trim_start"))
+            end_sec = self._parse_time(opts.get("trim_end"))
+            if start_sec is None and end_sec is None:
+                start_sec = None  # nothing valid -> ignore trim
+            elif start_sec is None:
+                start_sec = 0.0
+        self._trim = start_sec is not None or end_sec is not None
+
+        # reset accurate-progress accumulators
+        self._grand_total = None
+        self._completed = 0
+        self._counted = set()
+
         self.downloading = True
         self._dl = Downloader(progress_cb=self._on_progress, log_cb=self._on_log)
         threading.Thread(
             target=self._run,
-            args=(url, out_dir, quality, use_aria, conc, playlist),
+            args=(url, out_dir, quality, use_aria, conc, playlist,
+                  start_sec, end_sec),
             daemon=True).start()
 
-    def _run(self, url, out_dir, quality, use_aria, conc, playlist):
+    def _run(self, url, out_dir, quality, use_aria, conc, playlist,
+             start_sec, end_sec):
         try:
-            self._dl.download(url, out_dir, quality, use_aria, conc, playlist)
-            self._js("onDone")
+            self._dl.download(url, out_dir, quality, use_aria, conc, playlist,
+                              start_sec, end_sec)
+            self._js("onDone", self._dl.final_path or "")
         except DownloadCancelled:
             self._js("onCancelled")
         except Exception as e:  # noqa: BLE001 - surface any error to the UI
             self._js("onError", str(e))
         finally:
             self.downloading = False
+
+    def _overall_percent(self, d):
+        """A single 0-99 figure that spans the whole job (video + audio),
+        instead of yt-dlp's per-stream percent that resets mid-download.
+        Capped at 99; 100 is reserved for a fully finished, openable file."""
+        info = d.get("info_dict") or {}
+        status = d.get("status")
+        cur_total = d.get("total_bytes") or d.get("total_bytes_estimate")
+        done = d.get("downloaded_bytes", 0) or 0
+
+        if not self._trim and self._grand_total is None:
+            total, ok = 0, True
+            reqs = info.get("requested_formats")
+            if reqs:
+                for f in reqs:
+                    sz = f.get("filesize") or f.get("filesize_approx")
+                    if sz:
+                        total += sz
+                    else:
+                        ok = False
+            else:
+                sz = info.get("filesize") or info.get("filesize_approx")
+                total, ok = (sz, True) if sz else (0, False)
+            if ok and total > 0:
+                self._grand_total = total
+
+        if status == "finished":
+            fn = d.get("filename")
+            if fn and fn not in self._counted:
+                self._counted.add(fn)
+                self._completed += (cur_total or done or 0)
+
+        if not self._trim and self._grand_total:
+            frac = (self._completed + (0 if status == "finished" else done)) \
+                / self._grand_total
+        elif cur_total:
+            frac = done / cur_total
+        else:
+            return None
+        return max(0.0, min(99.0, round(frac * 100, 1)))
 
     def _on_progress(self, d):
         info = d.get("info_dict") or {}
@@ -150,6 +253,7 @@ class Api:
             "total": d.get("total_bytes") or d.get("total_bytes_estimate"),
             "speed": d.get("speed"),
             "eta": d.get("eta"),
+            "percent": self._overall_percent(d),
         })
 
     def _on_log(self, msg):
@@ -178,7 +282,10 @@ def main():
                 res = window.evaluate_js(
                     "(document.getElementById('downloadBtn')?'btn':'nobtn')+'|'"
                     "+document.querySelectorAll('.chip').length+'|'"
-                    "+(getComputedStyle(document.body).backgroundColor)")
+                    "+(document.getElementById('trim')?'trim':'notrim')+'|'"
+                    "+(document.getElementById('openFileBtn')?'open':'noopen')+'|'"
+                    "+getComputedStyle(document.getElementById('downloadBtn')).opacity+'|'"
+                    "+(window.__lastErr||'noerr')")
                 with open(out, "w", encoding="utf-8") as f:
                     f.write(str(res))
             except Exception as e:

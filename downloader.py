@@ -55,6 +55,7 @@ class Downloader:
         self.progress_cb = progress_cb
         self.log_cb = log_cb
         self._cancel = False
+        self.final_path = None
 
     def cancel(self):
         self._cancel = True
@@ -77,10 +78,14 @@ class Downloader:
             self._log(f"Processing ({name})...")
         elif status == "finished":
             self._log(f"Finished processing ({name}).")
+            fp = (d.get("info_dict") or {}).get("filepath")
+            if fp:
+                self.final_path = fp
 
     def build_opts(self, out_dir, quality, ffmpeg_loc, use_aria2c,
-                   concurrency, download_playlist):
+                   concurrency, download_playlist, start_sec=None, end_sec=None):
         fmt = QUALITY_FORMATS.get(quality, QUALITY_FORMATS["Best available"])
+        trimming = start_sec is not None or end_sec is not None
 
         opts = {
             "outtmpl": os.path.join(out_dir, "%(title)s [%(id)s].%(ext)s"),
@@ -114,7 +119,18 @@ class Downloader:
             # codec genuinely can't go in MP4).
             opts["merge_output_format"] = "mp4"
 
-        aria_path = find_aria2c() if use_aria2c else None
+        if trimming:
+            # Clip a section. aria2c can't do partial fragment ranges, so trim
+            # always uses the native downloader.
+            from yt_dlp.utils import download_range_func
+            s = start_sec or 0
+            e = end_sec if end_sec is not None else 10 ** 9
+            opts["download_ranges"] = download_range_func(None, [(s, e)])
+            opts["force_keyframes_at_cuts"] = True
+            self._log(f"Clipping {s:.0f}s -> "
+                      f"{'end' if end_sec is None else f'{e:.0f}s'}.")
+
+        aria_path = find_aria2c() if (use_aria2c and not trimming) else None
         if aria_path:
             opts["external_downloader"] = aria_path
             opts["external_downloader_args"] = {
@@ -126,8 +142,10 @@ class Downloader:
         return opts
 
     def download(self, url, out_dir, quality="Best available", use_aria2c=False,
-                 concurrency=16, download_playlist=False):
+                 concurrency=16, download_playlist=False,
+                 start_sec=None, end_sec=None):
         self._cancel = False
+        self.final_path = None
         os.makedirs(out_dir, exist_ok=True)
 
         ffmpeg_loc = find_ffmpeg()
@@ -136,6 +154,6 @@ class Downloader:
                       "Install it with: winget install Gyan.FFmpeg")
 
         opts = self.build_opts(out_dir, quality, ffmpeg_loc, use_aria2c,
-                               concurrency, download_playlist)
+                               concurrency, download_playlist, start_sec, end_sec)
         with yt_dlp.YoutubeDL(opts) as ydl:
             ydl.download([url])
