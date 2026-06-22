@@ -49,14 +49,17 @@ bundled copy automatically. For the best results install the full build:
 winget install Gyan.FFmpeg
 ```
 
-## Build a standalone .exe (optional)
+## Build a standalone .exe (one-click app, no Python needed)
+
+Double-click **`build_exe.bat`**, or run:
 
 ```bash
-pip install pyinstaller
-pyinstaller --noconfirm --onefile --windowed --name "YT-MP4-Downloader" app.py
+python -m PyInstaller --noconfirm --onefile --windowed --name "YT MP4 Downloader" \
+  --icon icon.ico --collect-all customtkinter --collect-all yt_dlp app.py
 ```
 
-The .exe lands in `dist/`.
+The `.exe` lands in `dist/`. Right-click it -> Send to -> Desktop to get a
+one-click launcher (no terminal).
 
 ## Notes
 

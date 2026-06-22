@@ -35,8 +35,19 @@ def find_ffmpeg():
         return None
 
 
+def find_aria2c():
+    """Full path to aria2c, or None. Falls back to the winget install location
+    since a fresh winget install isn't on PATH until the shell restarts."""
+    found = shutil.which("aria2c")
+    if found:
+        return found
+    local = os.environ.get("LOCALAPPDATA", "")
+    candidate = os.path.join(local, "Microsoft", "WinGet", "Links", "aria2c.exe")
+    return candidate if os.path.isfile(candidate) else None
+
+
 def has_aria2c():
-    return shutil.which("aria2c") is not None
+    return find_aria2c() is not None
 
 
 class Downloader:
@@ -103,8 +114,9 @@ class Downloader:
             # codec genuinely can't go in MP4).
             opts["merge_output_format"] = "mp4"
 
-        if use_aria2c and has_aria2c():
-            opts["external_downloader"] = "aria2c"
+        aria_path = find_aria2c() if use_aria2c else None
+        if aria_path:
+            opts["external_downloader"] = aria_path
             opts["external_downloader_args"] = {
                 "aria2c": ["-x", "16", "-s", "16", "-k", "1M",
                            "--console-log-level=warn", "--summary-interval=0"]
