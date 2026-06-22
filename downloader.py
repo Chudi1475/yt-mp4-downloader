@@ -11,12 +11,15 @@ class DownloadCancelled(Exception):
 
 # Quality preset -> yt-dlp format selector.
 # 4K/2K on YouTube is VP9/AV1 (no H.264 above 1080p), merged into an MP4 container.
+# Prefer AAC (m4a) audio so the MP4 plays everywhere (Windows Media Player,
+# QuickTime, etc.) -- YouTube's "best" audio is often Opus, which WMP can't play.
+# Falls back to any audio only if AAC isn't offered.
 QUALITY_FORMATS = {
-    "Best available": "bestvideo*+bestaudio/best",
-    "4K (2160p)": "bestvideo[height<=2160]+bestaudio/best[height<=2160]/best",
-    "1440p (2K)": "bestvideo[height<=1440]+bestaudio/best[height<=1440]/best",
-    "1080p (Full HD)": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
-    "720p (HD)": "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+    "Best available": "bestvideo*+bestaudio[ext=m4a]/bestvideo*+bestaudio/best",
+    "4K (2160p)": "bestvideo[height<=2160]+bestaudio[ext=m4a]/bestvideo[height<=2160]+bestaudio/best[height<=2160]/best",
+    "1440p (2K)": "bestvideo[height<=1440]+bestaudio[ext=m4a]/bestvideo[height<=1440]+bestaudio/best[height<=1440]/best",
+    "1080p (Full HD)": "bestvideo[height<=1080]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+    "720p (HD)": "bestvideo[height<=720]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
     "Audio only (MP3)": "bestaudio/best",
 }
 
@@ -102,7 +105,7 @@ class Downloader:
             "fragment_retries": 10,
             "concurrent_fragment_downloads": max(1, int(concurrency)),
             "continuedl": True,
-            "overwrites": False,
+            "overwrites": True,   # re-downloading a video refreshes it (e.g. to fix audio)
         }
 
         if ffmpeg_loc:

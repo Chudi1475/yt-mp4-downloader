@@ -34,6 +34,7 @@ class Api:
     def __init__(self):
         self._window = None
         self._dl = None
+        self._thread = None
         self.downloading = False
         # accurate-progress state (spans both video + audio streams)
         self._grand_total = None
@@ -166,8 +167,11 @@ class Api:
             self._dl.cancel()
 
     def start_download(self, opts):
-        if self.downloading:
+        # Only block if a download is GENUINELY still running. If the flag is
+        # stale (previous run finished), fall through so the next one starts now.
+        if self.downloading and self._thread and self._thread.is_alive():
             return
+        self.downloading = False
         url = (opts.get("url") or "").strip()
         if not url:
             self._js("onError", "Enter a YouTube URL first.")
@@ -195,11 +199,12 @@ class Api:
 
         self.downloading = True
         self._dl = Downloader(progress_cb=self._on_progress, log_cb=self._on_log)
-        threading.Thread(
+        self._thread = threading.Thread(
             target=self._run,
             args=(url, out_dir, quality, use_aria, conc, playlist,
                   start_sec, end_sec),
-            daemon=True).start()
+            daemon=True)
+        self._thread.start()
 
     def _run(self, url, out_dir, quality, use_aria, conc, playlist,
              start_sec, end_sec):

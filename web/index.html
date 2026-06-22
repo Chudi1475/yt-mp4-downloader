@@ -580,6 +580,7 @@ async function triggerInfo(){
   const url = $("url").value.trim();
   if(!url || !/https?:\/\//.test(url) || url===lastInfoUrl) return;
   lastInfoUrl = url;
+  if(!$("downloadBtn").disabled) resetReady();  // new link -> clear the finished card, ready to go again
   const p = $("preview"); p.hidden=false; p.classList.add("loading");
   $("vtitle").textContent="Loading..."; $("vchannel").textContent=""; $("vdur").textContent=""; $("vmax").hidden=true; $("thumb").removeAttribute("src");
   try{
@@ -624,6 +625,17 @@ function startDownload(){
 
 function setBusy(on){ $("downloadBtn").disabled=on; $("downloadBtn").classList.toggle("busy",on); }
 function setIndet(on){ isIndet=on; $("bar").classList.toggle("indet",on); }
+function resetReady(){
+  $("progressCard").hidden = true;
+  $("progressCard").classList.remove("ok");
+  $("doneActions").hidden = true;
+  $("cancelBtn").hidden = false;
+  $("bar").classList.remove("clickable");
+  $("fill").style.width = "0%";
+  $("progPct").textContent = "0%";
+  $("progStatus").textContent = "Starting...";
+  $("statSpeed").textContent="—"; $("statEta").textContent="—"; $("statSize").textContent="—";
+}
 
 window.onProgress = (d)=>{
   if(d.title) $("progStatus").textContent = "Downloading: " + d.title;
