@@ -2,7 +2,7 @@
 
 Fast desktop app to grab YouTube videos as MP4, up to **4K (2160p)**. Built on
 yt-dlp + ffmpeg with multi-connection downloads so it pulls files as fast as your
-connection allows.
+connection allows. Modern glass UI rendered in Edge WebView2.
 
 ![quality](https://img.shields.io/badge/quality-up%20to%204K-ff3b30) ![python](https://img.shields.io/badge/python-3.9%2B-blue)
 
@@ -14,9 +14,11 @@ connection allows.
   turbo mode (16 connections per stream)
 - Auto-merges separate 4K video + audio streams into one MP4
 - Falls back to a bundled ffmpeg if you don't have one installed
-- Live progress bar with speed + ETA
+- Live video preview (thumbnail, title, max resolution) before you download
+- Animated progress with live speed + ETA
 - Playlist support
-- Clean dark GUI
+- Modern frameless glass UI (HTML/CSS in Edge WebView2) — paste, pick a quality
+  chip, hit download
 
 ## Quick start (Windows)
 
@@ -55,7 +57,7 @@ Double-click **`build_exe.bat`**, or run:
 
 ```bash
 python -m PyInstaller --noconfirm --onefile --windowed --name "YT MP4 Downloader" \
-  --icon icon.ico --collect-all customtkinter --collect-all yt_dlp app.py
+  --icon icon.ico --add-data "web;web" --collect-all webview --collect-all yt_dlp app.py
 ```
 
 The `.exe` lands in `dist/`. Right-click it -> Send to -> Desktop to get a

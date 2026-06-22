@@ -6,7 +6,8 @@ echo Building standalone exe...
 python -m PyInstaller --noconfirm --onefile --windowed ^
   --name "YT MP4 Downloader" ^
   --icon icon.ico ^
-  --collect-all customtkinter ^
+  --add-data "web;web" ^
+  --collect-all webview ^
   --collect-all yt_dlp ^
   app.py
 echo.

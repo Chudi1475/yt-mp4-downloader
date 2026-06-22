@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YT MP4 Downloader</title>
+<style>
+:root{
+  --bg:#07070c;
+  --glass:rgba(255,255,255,.045);
+  --glass-strong:rgba(255,255,255,.075);
+  --border:rgba(255,255,255,.09);
+  --text:#f3f3f8;
+  --muted:#9696ad;
+  --a1:#ff3d54; --a2:#ff2d8f; --a3:#b537f2;
+  --radius:18px;
+  --glow:0 0 38px rgba(255,45,143,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:"Segoe UI Variable Display","Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);overflow:hidden;
+  -webkit-user-select:none;user-select:none;
+}
+input,.log{-webkit-user-select:text;user-select:text;}
+
+/* ---------- aurora background ---------- */
+.aurora{position:fixed;inset:0;overflow:hidden;z-index:0;filter:blur(90px);opacity:.5;}
+.aurora i{position:absolute;display:block;width:55vw;height:55vw;border-radius:50%;mix-blend-mode:screen;animation:float 20s ease-in-out infinite;}
+.aurora i:nth-child(1){background:radial-gradient(circle,#ff3d54,transparent 60%);top:-12%;left:-8%;}
+.aurora i:nth-child(2){background:radial-gradient(circle,#b537f2,transparent 60%);bottom:-18%;right:-12%;animation-delay:-7s;}
+.aurora i:nth-child(3){background:radial-gradient(circle,#2d7bff,transparent 60%);top:28%;left:42%;animation-delay:-13s;}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1);}33%{transform:translate(7%,9%) scale(1.12);}66%{transform:translate(-6%,-5%) scale(.93);}}
+
+.app{position:relative;z-index:1;height:100vh;display:flex;flex-direction:column;}
+
+/* ---------- title bar ---------- */
+.titlebar{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px 0 18px;flex:0 0 auto;}
+.brand{display:flex;align-items:center;gap:13px;}
+.logo{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--a1),var(--a2),var(--a3));display:flex;align-items:center;justify-content:center;box-shadow:var(--glow);}
+.logo svg{width:17px;height:17px;color:#fff;}
+.brand-name{font-weight:700;font-size:15px;letter-spacing:.2px;display:block;line-height:1.1;}
+.brand-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:2.5px;}
+.win-controls{display:flex;gap:6px;}
+.win-btn{width:36px;height:30px;border:none;border-radius:9px;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.win-btn:hover{background:var(--glass-strong);color:var(--text);}
+.win-btn.close:hover{background:var(--a1);color:#fff;}
+.win-btn svg{width:15px;height:15px;}
+
+/* ---------- content ---------- */
+.content{flex:1;overflow-y:auto;padding:4px 22px 22px;display:flex;flex-direction:column;gap:15px;}
+.content::-webkit-scrollbar{width:8px;}
+.content::-webkit-scrollbar-thumb{background:var(--glass-strong);border-radius:4px;}
+.content::-webkit-scrollbar-track{background:transparent;}
+
+.glass{background:var(--glass);border:1px solid var(--border);border-radius:var(--radius);
+  backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);}
+
+/* url */
+.url-card{padding:7px;}
+.input-wrap{display:flex;align-items:center;gap:12px;padding:6px 8px 6px 16px;border-radius:13px;transition:box-shadow .2s;}
+.input-wrap:focus-within{box-shadow:0 0 0 2px rgba(255,45,143,.55),var(--glow);}
+.input-wrap .lead{width:18px;height:18px;color:var(--muted);flex:0 0 auto;}
+#url{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:15px;padding:13px 0;}
+#url::placeholder{color:#5d5d73;}
+
+.ghost-btn{background:var(--glass-strong);border:1px solid var(--border);color:var(--text);padding:11px 17px;border-radius:11px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s;white-space:nowrap;}
+.ghost-btn:hover{background:rgba(255,255,255,.13);transform:translateY(-1px);}
+.ghost-btn:active{transform:translateY(0);}
+.ghost-btn.small{padding:8px 13px;font-size:12px;}
+.ghost-btn.danger{align-self:flex-start;}
+.ghost-btn.danger:hover{background:var(--a1);border-color:var(--a1);color:#fff;}
+
+/* preview */
+.preview{display:flex;gap:15px;padding:12px;align-items:center;animation:rise .35s ease;}
+.thumb{width:132px;height:74px;object-fit:cover;border-radius:12px;background:#15151f;flex:0 0 auto;border:1px solid var(--border);}
+.preview-info{min-width:0;}
+.vtitle{font-weight:650;font-size:15px;line-height:1.32;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.meta{margin-top:7px;font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.badge{background:linear-gradient(135deg,var(--a1),var(--a3));color:#fff;padding:3px 10px;border-radius:20px;font-weight:600;font-size:11px;}
+.preview.loading .thumb{animation:pulse 1.2s infinite;}
+.preview.loading .vtitle{color:var(--muted);}
+
+/* section label + chips */
+.block-label{font-size:11px;text-transform:uppercase;letter-spacing:2.5px;color:var(--muted);margin:4px 4px 11px;}
+.chips{display:flex;gap:10px;flex-wrap:wrap;}
+.chip{padding:12px 22px;border-radius:14px;border:1px solid var(--border);background:var(--glass);color:var(--text);cursor:pointer;font-weight:650;font-size:14px;transition:.18s;backdrop-filter:blur(10px);}
+.chip:hover{border-color:rgba(255,255,255,.28);transform:translateY(-2px);}
+.chip.active{background:linear-gradient(135deg,var(--a1),var(--a2));border-color:transparent;box-shadow:var(--glow);color:#fff;}
+
+/* tiles */
+.tile{padding:16px;}
+.tile-top{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);font-weight:600;}
+.tile-top svg{width:16px;height:16px;flex:0 0 auto;}
+.tile-top .val{margin-left:auto;color:var(--text);font-size:16px;font-weight:750;}
+.folder-tile{display:flex;align-items:center;gap:14px;}
+.folder-tile .tile-top{flex:0 0 auto;}
+.folder-path{flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85;}
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.speed-tile{display:flex;flex-direction:column;gap:16px;}
+.opts-tile{display:flex;flex-direction:column;gap:2px;justify-content:center;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;}
+.toggle-row .tl{display:flex;align-items:center;gap:11px;}
+.toggle-row .tl svg{width:18px;height:18px;color:var(--muted);flex:0 0 auto;}
+.toggle-row .name{font-size:14px;font-weight:600;line-height:1.15;}
+.toggle-row .hint{font-size:11px;color:var(--muted);font-weight:400;}
+.toggle-row.disabled{opacity:.45;}
+
+/* switch */
+.switch{position:relative;display:inline-block;width:48px;height:27px;flex:0 0 auto;}
+.switch input{opacity:0;width:0;height:0;}
+.track{position:absolute;inset:0;background:rgba(255,255,255,.13);border-radius:20px;transition:.25s;cursor:pointer;}
+.track:before{content:"";position:absolute;height:21px;width:21px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.25s;}
+.switch input:checked + .track{background:linear-gradient(135deg,var(--a1),var(--a2));box-shadow:var(--glow);}
+.switch input:checked + .track:before{transform:translateX(21px);}
+
+/* slider */
+.slider{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;outline:none;
+  background:linear-gradient(90deg,var(--a2) 0%,var(--a2) var(--p,50%),rgba(255,255,255,.13) var(--p,50%));}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:linear-gradient(135deg,var(--a1),var(--a2));cursor:pointer;border:2px solid #fff;box-shadow:0 0 12px rgba(255,45,143,.6);}
+
+/* CTA */
+.cta{position:relative;width:100%;height:62px;border:none;border-radius:18px;cursor:pointer;color:#fff;
+  font-size:17px;font-weight:750;letter-spacing:.3px;display:flex;align-items:center;justify-content:center;gap:12px;
+  background:linear-gradient(135deg,var(--a1),var(--a2),var(--a3));background-size:200% 200%;
+  box-shadow:0 10px 30px rgba(255,45,143,.32);transition:transform .15s,box-shadow .2s,filter .2s;
+  overflow:hidden;animation:gshift 6s ease infinite;}
+.cta svg{width:21px;height:21px;}
+.cta:hover{transform:translateY(-2px);box-shadow:0 16px 46px rgba(255,45,143,.5);}
+.cta:active{transform:translateY(0);}
+.cta:disabled{filter:grayscale(.4) brightness(.65);cursor:default;transform:none;box-shadow:none;}
+.cta:before{content:"";position:absolute;top:0;left:-60%;width:42%;height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-20deg);animation:sheen 3.6s infinite;}
+.cta.busy:before{animation-duration:1s;}
+@keyframes sheen{0%{left:-60%;}60%,100%{left:135%;}}
+@keyframes gshift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+
+/* progress */
+.progress-card{padding:18px;display:flex;flex-direction:column;gap:15px;animation:rise .35s ease;transition:box-shadow .4s;}
+.prog-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+#progStatus{font-weight:650;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pct{font-size:23px;font-weight:800;flex:0 0 auto;background:linear-gradient(135deg,var(--a1),var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.bar{height:12px;border-radius:8px;background:rgba(255,255,255,.08);overflow:hidden;position:relative;}
+.fill{height:100%;width:0;border-radius:8px;position:relative;
+  background:linear-gradient(90deg,var(--a1),var(--a2),var(--a3));background-size:200% 100%;
+  transition:width .3s ease;animation:gshift 3s linear infinite;}
+.fill:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+  background-size:40% 100%;background-repeat:no-repeat;animation:shimmer 1.4s infinite;}
+@keyframes shimmer{0%{background-position:-40% 0;}100%{background-position:140% 0;}}
+.bar.indet .fill{width:35%!important;animation:indet 1.15s ease-in-out infinite;}
+@keyframes indet{0%{margin-left:-35%;}100%{margin-left:100%;}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;}
+.stat{background:var(--glass-strong);border-radius:12px;padding:11px;text-align:center;}
+.stat-val{display:block;font-weight:750;font-size:15px;}
+.stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:2px;}
+.progress-card.ok{box-shadow:0 0 0 1px rgba(54,224,192,.4),0 0 44px rgba(54,224,192,.22);}
+.progress-card.ok .pct{background:linear-gradient(135deg,#36e0c0,#2d7bff);-webkit-background-clip:text;background-clip:text;}
+
+/* log */
+.log-wrap summary{cursor:pointer;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2.5px;padding:6px 4px;list-style:none;}
+.log-wrap summary::-webkit-details-marker{display:none;}
+.log-wrap summary:before{content:"▸ ";}
+.log-wrap[open] summary:before{content:"▾ ";}
+.log{margin-top:8px;max-height:120px;overflow-y:auto;font-family:"Cascadia Code",Consolas,monospace;font-size:12px;
+  color:#9fb0c0;background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:12px;padding:12px;white-space:pre-wrap;}
+.log::-webkit-scrollbar{width:6px;}
+.log::-webkit-scrollbar-thumb{background:var(--glass-strong);border-radius:3px;}
+
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:50;}
+
+@keyframes rise{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.shake{animation:shake .4s;}
+@keyframes shake{0%,100%{transform:translateX(0);}20%,60%{transform:translateX(-7px);}40%,80%{transform:translateX(7px);}}
+</style>
+</head>
+<body>
+<div class="aurora"><i></i><i></i><i></i></div>
+
+<div class="app">
+  <header class="titlebar pywebview-drag-region">
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+      <div>
+        <span class="brand-name">4K Downloader</span>
+        <span class="brand-sub">youtube&nbsp;&rarr;&nbsp;mp4</span>
+      </div>
+    </div>
+    <div class="win-controls">
+      <button class="win-btn" id="minBtn" title="Minimize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+      <button class="win-btn close" id="closeBtn" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- URL -->
+    <section class="glass url-card">
+      <div class="input-wrap">
+        <svg class="lead" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+        <input id="url" placeholder="Paste a YouTube link..." autocomplete="off" spellcheck="false">
+        <button id="pasteBtn" class="ghost-btn">Paste</button>
+      </div>
+    </section>
+
+    <!-- preview -->
+    <section class="glass preview" id="preview" hidden>
+      <img id="thumb" class="thumb" alt="">
+      <div class="preview-info">
+        <div class="vtitle" id="vtitle">Loading...</div>
+        <div class="meta">
+          <span id="vchannel"></span>
+          <span id="vdur"></span>
+          <span class="badge" id="vmax" hidden></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- quality -->
+    <section>
+      <div class="block-label">Quality</div>
+      <div class="chips" id="qualityChips"></div>
+    </section>
+
+    <!-- folder -->
+    <section class="glass tile folder-tile">
+      <div class="tile-top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>Save to</span>
+      </div>
+      <div class="folder-path" id="folderPath">...</div>
+      <button id="folderBtn" class="ghost-btn small">Change</button>
+    </section>
+
+    <!-- options bento -->
+    <section class="bento">
+      <div class="glass tile speed-tile">
+        <div class="tile-top">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>
+          <span>Connections</span>
+          <span class="val" id="connVal">16</span>
+        </div>
+        <input type="range" id="conn" class="slider" min="1" max="32" value="16">
+      </div>
+
+      <div class="glass tile opts-tile">
+        <div class="toggle-row" id="turboRow">
+          <div class="tl">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
+            <div>
+              <div class="name">Turbo</div>
+              <div class="hint" id="turboHint">aria2c</div>
+            </div>
+          </div>
+          <label class="switch"><input type="checkbox" id="turbo"><span class="track"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="tl">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+            <div><div class="name">Whole playlist</div></div>
+          </div>
+          <label class="switch"><input type="checkbox" id="playlist"><span class="track"></span></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <button id="downloadBtn" class="cta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+      <span>Download</span>
+    </button>
+
+    <!-- progress -->
+    <section class="glass progress-card" id="progressCard" hidden>
+      <div class="prog-head">
+        <span id="progStatus">Starting...</span>
+        <span class="pct" id="progPct">0%</span>
+      </div>
+      <div class="bar" id="bar"><div class="fill" id="fill"></div></div>
+      <div class="stats">
+        <div class="stat"><span class="stat-val" id="statSpeed">&mdash;</span><span class="stat-lbl">speed</span></div>
+        <div class="stat"><span class="stat-val" id="statEta">&mdash;</span><span class="stat-lbl">eta</span></div>
+        <div class="stat"><span class="stat-val" id="statSize">&mdash;</span><span class="stat-lbl">size</span></div>
+      </div>
+      <button id="cancelBtn" class="ghost-btn danger">Cancel</button>
+    </section>
+
+    <!-- log -->
+    <details class="log-wrap">
+      <summary>Activity</summary>
+      <div class="log" id="log"></div>
+    </details>
+  </main>
+</div>
+
+<script>
+const QLABEL = {"Best available":"Best","4K (2160p)":"4K","1440p (2K)":"2K","1080p (Full HD)":"1080p","720p (HD)":"720p","Audio only (MP3)":"MP3"};
+const api = () => window.pywebview.api;
+const $ = id => document.getElementById(id);
+let env = {}, selectedQuality = "4K (2160p)", folder = "", infoTimer = null, lastInfoUrl = "", isIndet = false;
+
+function fmtBytes(n){ if(!n) return "0 B"; const u=["B","KB","MB","GB","TB"]; let i=0; n=Number(n); while(Math.abs(n)>=1024&&i<u.length-1){n/=1024;i++;} return n.toFixed(1)+" "+u[i]; }
+function fmtTime(s){ if(s==null) return "--:--"; s=Math.floor(s); const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60; const p=v=>String(v).padStart(2,"0"); return h?`${h}:${p(m)}:${p(x)}`:`${p(m)}:${p(x)}`; }
+function log(msg){ const el=$("log"); const d=document.createElement("div"); d.textContent=msg; el.appendChild(d); el.scrollTop=el.scrollHeight; }
+function shake(el){ el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
+
+window.addEventListener("pywebviewready", init);
+
+async function init(){
+  try{ env = await api().get_env(); }catch(e){ env={qualities:Object.keys(QLABEL),default_dir:""}; }
+  folder = env.default_dir || "";
+  $("folderPath").textContent = folder;
+  buildChips(env.qualities || Object.keys(QLABEL));
+  if(env.aria2c){ $("turbo").checked = true; $("turboHint").textContent = "ready"; }
+  else { $("turbo").checked = false; $("turbo").disabled = true; $("turboRow").classList.add("disabled"); $("turboHint").textContent = "not installed"; }
+  log("ffmpeg: " + (env.ffmpeg ? "ready" : "missing"));
+  log("aria2c: " + (env.aria2c ? "ready (turbo on)" : "not installed (optional)"));
+  setConn(16);
+  bind();
+}
+
+function buildChips(qs){
+  const box = $("qualityChips"); box.innerHTML = "";
+  qs.forEach(q=>{
+    const c = document.createElement("button");
+    c.className = "chip" + (q===selectedQuality ? " active" : "");
+    c.textContent = QLABEL[q] || q;
+    c.onclick = ()=>{ selectedQuality=q; [...box.children].forEach(x=>x.classList.remove("active")); c.classList.add("active"); };
+    box.appendChild(c);
+  });
+}
+
+function setConn(v){ $("conn").value=v; $("connVal").textContent=v; $("conn").style.setProperty("--p", ((v-1)/31*100)+"%"); }
+
+function bind(){
+  $("pasteBtn").onclick = async ()=>{
+    let t = "";
+    try{ t = await navigator.clipboard.readText(); }catch(e){}
+    if(!t){ try{ t = await api().get_clipboard(); }catch(e){} }
+    if(t){ $("url").value = t.trim(); scheduleInfo(); }
+  };
+  $("url").addEventListener("input", scheduleInfo);
+  $("conn").addEventListener("input", e=> setConn(e.target.value));
+  $("folderBtn").onclick = async ()=>{ try{ const r = await api().choose_folder(); if(r){ folder=r; $("folderPath").textContent=r; } }catch(e){} };
+  $("downloadBtn").onclick = startDownload;
+  $("cancelBtn").onclick = ()=>{ api().cancel(); $("progStatus").textContent="Cancelling..."; };
+  $("minBtn").onclick = ()=> api().minimize();
+  $("closeBtn").onclick = ()=> api().close();
+  document.querySelectorAll(".win-btn").forEach(b=> b.addEventListener("mousedown", e=> e.stopPropagation()));
+}
+
+function scheduleInfo(){ clearTimeout(infoTimer); infoTimer = setTimeout(triggerInfo, 650); }
+async function triggerInfo(){
+  const url = $("url").value.trim();
+  if(!url || !/https?:\/\//.test(url) || url===lastInfoUrl) return;
+  lastInfoUrl = url;
+  const p = $("preview"); p.hidden=false; p.classList.add("loading");
+  $("vtitle").textContent="Loading..."; $("vchannel").textContent=""; $("vdur").textContent=""; $("vmax").hidden=true; $("thumb").removeAttribute("src");
+  try{
+    const info = await api().fetch_info(url);
+    if(!info || info.error){ p.hidden=true; p.classList.remove("loading"); return; }
+    renderPreview(info);
+  }catch(e){ p.hidden=true; p.classList.remove("loading"); }
+}
+function renderPreview(info){
+  const p = $("preview"); p.hidden=false; p.classList.remove("loading");
+  $("vtitle").textContent = info.title || "Untitled";
+  $("vchannel").textContent = info.channel || "";
+  $("vdur").textContent = info.duration ? fmtTime(info.duration) : "";
+  if(info.max_height){ const h=info.max_height; $("vmax").textContent = "up to " + (h>=2160?"4K":h>=1440?"2K":h+"p"); $("vmax").hidden=false; }
+  if(info.thumbnail){ $("thumb").src = info.thumbnail; $("thumb").style.display=""; } else { $("thumb").style.display="none"; }
+}
+
+function startDownload(){
+  const url = $("url").value.trim();
+  if(!url){ shake($("url").parentElement); log("Enter a YouTube URL first."); return; }
+  const opts = { url, folder, quality:selectedQuality, turbo:$("turbo").checked, connections:Number($("conn").value), playlist:$("playlist").checked };
+  setBusy(true);
+  $("progressCard").hidden = false;
+  $("progressCard").classList.remove("ok");
+  $("progStatus").textContent = "Starting...";
+  $("progPct").textContent = opts.turbo ? "turbo" : "0%";
+  setIndet(opts.turbo);
+  $("fill").style.width = opts.turbo ? "" : "0%";
+  $("statSpeed").textContent="—"; $("statEta").textContent="—"; $("statSize").textContent="—";
+  log("\n=== " + url);
+  log("quality: " + selectedQuality + (opts.turbo ? " · turbo" : " · " + opts.connections + " connections"));
+  api().start_download(opts);
+}
+
+function setBusy(on){ $("downloadBtn").disabled=on; $("downloadBtn").classList.toggle("busy",on); }
+function setIndet(on){ isIndet=on; $("bar").classList.toggle("indet",on); }
+
+window.onProgress = (d)=>{
+  if(d.title) $("progStatus").textContent = "Downloading: " + d.title;
+  if(d.status === "downloading"){
+    if(isIndet){ $("statSpeed").textContent = d.speed ? fmtBytes(d.speed)+"/s" : "—"; return; }
+    const total=d.total, done=d.downloaded||0;
+    if(total){ const pct=done/total*100; $("fill").style.width=pct.toFixed(1)+"%"; $("progPct").textContent=Math.round(pct)+"%"; }
+    $("statSpeed").textContent = d.speed ? fmtBytes(d.speed)+"/s" : "—";
+    $("statEta").textContent = fmtTime(d.eta);
+    $("statSize").textContent = fmtBytes(done) + (total ? " / "+fmtBytes(total) : "");
+  } else if(d.status === "finished"){
+    $("progStatus").textContent = "Merging into MP4...";
+  }
+};
+window.onDone = ()=>{ setBusy(false); setIndet(false); $("fill").style.width="100%"; $("progPct").textContent="100%"; $("progStatus").textContent="Done! Saved to your folder."; $("progressCard").classList.add("ok"); log("Complete."); celebrate(); };
+window.onCancelled = ()=>{ setBusy(false); setIndet(false); $("progStatus").textContent="Cancelled."; log("Cancelled."); };
+window.onError = (m)=>{ setBusy(false); setIndet(false); $("progStatus").textContent="Error — see activity log."; log("ERROR: " + m); };
+window.onLog = (m)=> log(m);
+
+function celebrate(){
+  const c=document.createElement("canvas"); c.className="confetti"; document.body.appendChild(c);
+  const ctx=c.getContext("2d"); c.width=innerWidth; c.height=innerHeight;
+  const colors=["#ff3d54","#ff2d8f","#b537f2","#36e0c0","#ffd23f"], parts=[];
+  for(let i=0;i<140;i++) parts.push({x:innerWidth/2,y:innerHeight*.42,vx:(Math.random()-.5)*13,vy:(Math.random()-.95)*13,c:colors[i%colors.length],r:Math.random()*4+2,life:1});
+  let t=0;(function anim(){ t++; ctx.clearRect(0,0,c.width,c.height); parts.forEach(p=>{ p.vy+=.27; p.x+=p.vx; p.y+=p.vy; p.life-=.011; ctx.globalAlpha=Math.max(p.life,0); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); }); if(t<150) requestAnimationFrame(anim); else c.remove(); })();
+}
+</script>
+</body>
+</html>
