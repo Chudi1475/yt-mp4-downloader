@@ -309,7 +309,7 @@ def main():
                     "+(document.getElementById('openFileBtn')?'open':'noopen')+'|'"
                     "+getComputedStyle(document.getElementById('downloadBtn')).opacity+'|'"
                     "+document.getElementById('folderPath').textContent+'|'"
-                    "+'card='+getComputedStyle(document.getElementById('progressCard')).display+'|'"
+                    "+'card='+getComputedStyle(document.getElementById('progressWrap')).display+'|'"
                     "+'accent='+getComputedStyle(document.documentElement).getPropertyValue('--a1').trim()+'|'"
                     "+(window.__lastErr||'noerr')")
                 with open(out, "w", encoding="utf-8") as f:
