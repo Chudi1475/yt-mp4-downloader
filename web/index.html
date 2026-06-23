@@ -687,21 +687,24 @@ function startDownload(){
   const opts = { url, folder, quality:selectedQuality, turbo:$("turbo").checked,
     connections:Number($("conn").value), playlist:$("playlist").checked,
     trim:trimOn, trim_start:$("trimStart").value, trim_end:$("trimEnd").value };
-  const indet = opts.turbo && !trimOn;   // trim forces the native (measurable) downloader
+  // Clipping uses ffmpeg to grab the exact range (no byte progress), and turbo
+  // uses aria2c (also no live %) -> show an animated bar instead of a stuck %.
+  const indet = trimOn || opts.turbo;
   setBusy(true);
   $("progressCard").hidden = false;
   $("progressCard").classList.remove("ok");
   $("doneActions").hidden = true;
   $("cancelBtn").hidden = false;
   $("bar").classList.remove("clickable");
-  $("progStatus").textContent = "Starting...";
-  $("progPct").textContent = indet ? "turbo" : "0%";
+  $("progStatus").textContent = trimOn ? "Clipping section…" : "Starting...";
+  $("progPct").textContent = !indet ? "0%" : (trimOn ? "clip" : "turbo");
   setIndet(indet);
   $("fill").style.width = indet ? "" : "0%";
   $("statSpeed").textContent="—"; $("statEta").textContent="—"; $("statSize").textContent="—";
   log("\n=== " + url);
-  log("quality: " + selectedQuality + (indet ? " · turbo" : " · " + opts.connections + " connections")
-      + (trimOn ? " · clip " + (opts.trim_start||"0:00") + "→" + (opts.trim_end||"end") : ""));
+  log("quality: " + selectedQuality
+      + (trimOn ? " · clip " + (opts.trim_start||"0:00") + "→" + (opts.trim_end||"end")
+                : (opts.turbo ? " · turbo" : " · " + opts.connections + " connections")));
   api().start_download(opts);
 }
 
