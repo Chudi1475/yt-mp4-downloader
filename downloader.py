@@ -54,9 +54,10 @@ def has_aria2c():
 
 
 class Downloader:
-    def __init__(self, progress_cb=None, log_cb=None):
+    def __init__(self, progress_cb=None, log_cb=None, pp_cb=None):
         self.progress_cb = progress_cb
         self.log_cb = log_cb
+        self.pp_cb = pp_cb
         self._cancel = False
         self.final_path = None
 
@@ -79,11 +80,15 @@ class Downloader:
         status, name = d.get("status"), d.get("postprocessor")
         if status == "started":
             self._log(f"Processing ({name})...")
+            if self.pp_cb:
+                self.pp_cb(name, "started")
         elif status == "finished":
             self._log(f"Finished processing ({name}).")
             fp = (d.get("info_dict") or {}).get("filepath")
             if fp:
                 self.final_path = fp
+            if self.pp_cb:
+                self.pp_cb(name, "finished")
 
     def build_opts(self, out_dir, quality, ffmpeg_loc, use_aria2c,
                    concurrency, download_playlist, start_sec=None, end_sec=None):

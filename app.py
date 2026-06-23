@@ -198,7 +198,8 @@ class Api:
         self._counted = set()
 
         self.downloading = True
-        self._dl = Downloader(progress_cb=self._on_progress, log_cb=self._on_log)
+        self._dl = Downloader(progress_cb=self._on_progress, log_cb=self._on_log,
+                              pp_cb=self._on_pp)
         self._thread = threading.Thread(
             target=self._run,
             args=(url, out_dir, quality, use_aria, conc, playlist,
@@ -274,6 +275,13 @@ class Api:
     def _on_log(self, msg):
         self._js("onLog", msg)
 
+    def _on_pp(self, name, status):
+        # The merge / audio-extract step has no byte progress; tell the UI to
+        # show an active "finishing" animation instead of a frozen 99%.
+        if status == "started" and name in ("Merger", "FFmpegExtractAudio",
+                                            "FFmpegVideoConvertor"):
+            self._js("onPhase", "finishing")
+
 
 def main():
     api = Api()
@@ -283,7 +291,7 @@ def main():
         js_api=api,
         width=940, height=860, min_size=(840, 760),
         frameless=True, easy_drag=False, resizable=True,
-        background_color="#07070c",
+        background_color="#eef1f8",
     )
     api.set_window(window)
 
@@ -302,6 +310,7 @@ def main():
                     "+getComputedStyle(document.getElementById('downloadBtn')).opacity+'|'"
                     "+document.getElementById('folderPath').textContent+'|'"
                     "+'card='+getComputedStyle(document.getElementById('progressCard')).display+'|'"
+                    "+'accent='+getComputedStyle(document.documentElement).getPropertyValue('--a1').trim()+'|'"
                     "+(window.__lastErr||'noerr')")
                 with open(out, "w", encoding="utf-8") as f:
                     f.write(str(res))

@@ -368,6 +368,88 @@ body::after{ content:""; position:fixed; inset:0; z-index:2; pointer-events:none
   @keyframes rise{ from{opacity:0;} to{opacity:1;} }
   .cta{ --mx:0px; --my:0px; }
 }
+/* ============================================================
+   MICROSOFT WORD THEME — light, blue + white. Appended last = wins.
+   Redefining the tokens flips every var() usage; the rest overrides
+   the hardcoded dark-only colors (glows, tracks, success green).
+   ============================================================ */
+:root{
+  --bg:#eef1f8;
+  --glass:rgba(255,255,255,.74);
+  --glass-strong:rgba(255,255,255,.92);
+  --border:rgba(20,28,64,.12);
+  --text:#1b1a19;
+  --muted:#605e5c;
+  --a1:#2b579a;            /* Word blue */
+  --a2:#2f6fc4;
+  --a3:#41a5ee;            /* lighter blue */
+  --glow:0 0 26px rgba(43,87,154,.28);
+  --focus-ring:0 0 0 3px rgba(43,87,154,.4), 0 0 0 1.5px rgba(255,255,255,.95);
+  --shadow-sm:0 1px 2px rgba(20,28,64,.10),0 2px 6px rgba(20,28,64,.06);
+  --shadow-md:0 1px 3px rgba(20,28,64,.10),0 8px 22px rgba(20,28,64,.10);
+  --shadow-lg:0 6px 16px rgba(20,28,64,.12),0 24px 50px rgba(20,28,64,.16);
+  --specular:inset 0 1px 0 0 rgba(255,255,255,.9);
+  --vibrancy-wash:linear-gradient(180deg,rgba(255,255,255,.65),rgba(255,255,255,.25) 40%,transparent);
+}
+body{ color:var(--text); background:linear-gradient(180deg,#f7f9fc,#eef1f8); }
+
+/* soft blue ambiance instead of the dark aurora; drop the dark grain */
+.aurora{ filter:blur(120px) saturate(110%); opacity:.6; }
+.aurora i{ mix-blend-mode:multiply; }
+.aurora i:nth-child(1){ background:radial-gradient(circle,rgba(43,87,154,.14),transparent 60%); }
+.aurora i:nth-child(2){ background:radial-gradient(circle,rgba(65,165,238,.14),transparent 60%); }
+.aurora i:nth-child(3){ background:radial-gradient(circle,rgba(47,111,196,.12),transparent 62%); }
+body::after{ display:none; }
+
+/* frosted white cards */
+.glass{ backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:var(--specular),var(--shadow-md); }
+
+/* title-bar controls */
+.win-btn:hover{ background:rgba(20,28,64,.08); color:var(--text); }
+.win-btn.close:hover{ background:#d13438; color:#fff; }
+
+/* inputs, focus rings, log */
+.input-wrap:focus-within{ box-shadow:0 0 0 2px rgba(43,87,154,.55),var(--glow); }
+.time-field input:focus{ box-shadow:0 0 0 2px rgba(43,87,154,.5),var(--glow); }
+#url::placeholder{ color:#8a8886; }
+.log{ background:rgba(20,28,64,.04); color:#3b3a39; border-color:var(--border); }
+
+/* chips */
+.chip{ box-shadow:0 1px 2px rgba(20,28,64,.10); }
+.chip:hover{ border-color:rgba(20,28,64,.22); box-shadow:0 6px 16px rgba(20,28,64,.14); }
+.chip.active{ color:#fff; box-shadow:0 8px 22px rgba(43,87,154,.4),var(--glow); }
+.chip.active:hover{ box-shadow:0 12px 28px rgba(43,87,154,.5),var(--glow); }
+
+/* light tracks for slider / switch / progress bar */
+.slider{ background:linear-gradient(90deg,var(--a2) 0%,var(--a2) var(--p,50%),rgba(20,28,64,.14) var(--p,50%)); }
+.slider::-webkit-slider-thumb{ box-shadow:0 0 10px rgba(43,87,154,.45); }
+.slider:focus-visible::-webkit-slider-thumb{ box-shadow:0 0 0 6px rgba(43,87,154,.3); }
+.track{ background:rgba(20,28,64,.18); }
+.bar{ background:rgba(20,28,64,.10); }
+
+/* primary button — Word blue */
+.cta{ box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 6px rgba(20,28,64,.14),0 10px 28px rgba(43,87,154,.36); }
+.cta:hover{ box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 12px rgba(20,28,64,.16),0 16px 44px rgba(43,87,154,.5); }
+.cta:focus-visible{ box-shadow:0 16px 46px rgba(43,87,154,.5),var(--focus-ring); }
+
+/* open-file button — brighter blue, stays on theme */
+.done-cta{ background:linear-gradient(135deg,#0f6cbd,#2b88d8); box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 6px rgba(20,28,64,.14),0 10px 28px rgba(15,108,189,.36); }
+.done-cta:hover{ box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 4px 12px rgba(20,28,64,.16),0 16px 44px rgba(15,108,189,.5); }
+.done-cta:focus-visible{ box-shadow:0 16px 44px rgba(15,108,189,.5),var(--focus-ring); }
+
+/* success state -> blue, not green */
+.progress-card.ok{ box-shadow:0 0 0 1px rgba(43,87,154,.35),0 0 36px rgba(43,87,154,.2); }
+.progress-card.ok .pct{ background:linear-gradient(135deg,#2b579a,#41a5ee); -webkit-background-clip:text; background-clip:text; }
+.progress-card.ok .fill{ box-shadow:0 0 16px rgba(43,87,154,.5); }
+@keyframes okBloom{
+  0%{ transform:scale(1); box-shadow:0 0 0 1px rgba(43,87,154,.35),0 0 36px rgba(43,87,154,.2); }
+  28%{ transform:scale(1.012); box-shadow:0 0 0 1px rgba(43,87,154,.7),0 0 60px rgba(43,87,154,.45),0 0 110px rgba(43,87,154,.2); }
+  100%{ transform:scale(1); box-shadow:0 0 0 1px rgba(43,87,154,.35),0 0 36px rgba(43,87,154,.2); }
+}
+
+/* scrollbars */
+.content::-webkit-scrollbar-thumb,.log::-webkit-scrollbar-thumb{ background:rgba(20,28,64,.2); }
 </style>
 </head>
 <body>
@@ -649,8 +731,10 @@ window.onProgress = (d)=>{
     $("statSize").textContent = fmtBytes(done) + (total ? " / "+fmtBytes(total) : "");
   } else if(d.status === "finished"){
     if(d.percent!=null){ $("fill").style.width=d.percent+"%"; $("progPct").textContent=Math.round(d.percent)+"%"; }
-    $("progStatus").textContent = "Merging into MP4...";
   }
+};
+window.onPhase = (p)=>{
+  if(p==="finishing"){ setIndet(true); $("progStatus").textContent="Finishing up…"; }
 };
 window.onDone = (path)=>{
   lastPath = path || "";
@@ -671,7 +755,7 @@ window.onLog = (m)=> log(m);
 function celebrate(){
   const c=document.createElement("canvas"); c.className="confetti"; document.body.appendChild(c);
   const ctx=c.getContext("2d"); c.width=innerWidth; c.height=innerHeight;
-  const colors=["#ff3d54","#ff2d8f","#b537f2","#36e0c0","#ffd23f"], parts=[];
+  const colors=["#2b579a","#41a5ee","#2f6fc4","#0f6cbd","#ffffff"], parts=[];
   for(let i=0;i<140;i++) parts.push({x:innerWidth/2,y:innerHeight*.42,vx:(Math.random()-.5)*13,vy:(Math.random()-.95)*13,c:colors[i%colors.length],r:Math.random()*4+2,life:1});
   let t=0;(function anim(){ t++; ctx.clearRect(0,0,c.width,c.height); parts.forEach(p=>{ p.vy+=.27; p.x+=p.vx; p.y+=p.vy; p.life-=.011; ctx.globalAlpha=Math.max(p.life,0); ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); }); if(t<150) requestAnimationFrame(anim); else c.remove(); })();
 }
